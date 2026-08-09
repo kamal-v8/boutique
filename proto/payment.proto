@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+package ecommerce.payment;
+
+option go_package = "ecommerce/payment";
+
+import "common.proto";
+
+message ChargeRequest {
+  string order_id = 1;
+  string user_id = 2;
+  common.Money amount = 3;
+  string payment_method = 4; // card | mock
+  string card_token = 5;
+}
+
+message ChargeResponse {
+  string transaction_id = 1;
+  bool approved = 2;
+  string message = 3;
+}
+
+service PaymentService {
+  rpc Charge(ChargeRequest) returns (ChargeResponse);
+}

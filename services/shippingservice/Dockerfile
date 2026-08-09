@@ -1,0 +1,12 @@
+FROM golang:1.26-alpine AS build
+WORKDIR /src
+COPY . .
+RUN CGO_ENABLED=0 go build -mod=vendor -o /bin/shippingservice .
+
+FROM alpine:3.20
+WORKDIR /app
+RUN addgroup -S app && adduser -S app -G app
+COPY --from=build /bin/shippingservice .
+USER app
+EXPOSE 50057
+CMD ["/app/shippingservice"]

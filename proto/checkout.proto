@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package ecommerce.checkout;
+
+option go_package = "ecommerce/checkout";
+
+import "common.proto";
+
+message PlaceOrderRequest {
+  string user_id = 1;
+  string cart_id = 2;
+  common.Address shipping_address = 3;
+  string payment_method = 4;
+  string card_token = 5;
+  string coupon_code = 6;   // optional
+  string shipping_option_id = 7; // optional, default standard
+}
+
+message PlaceOrderResponse {
+  string order_id = 1;
+  string tracking_id = 2;
+  common.Money total = 3;
+  string status = 4;
+}
+
+service CheckoutService {
+  rpc PlaceOrder(PlaceOrderRequest) returns (PlaceOrderResponse);
+}

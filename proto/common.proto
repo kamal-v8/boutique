@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package ecommerce.common;
+
+option go_package = "ecommerce/common";
+
+// Empty is a generic empty message.
+message Empty {}
+
+// Money represents a currency amount using units + nanos (like Google's Money).
+message Money {
+  string currency_code = 1;
+  int64 units = 2;
+  int32 nanos = 3;
+}
+
+
+// Address is a shipping/billing address.
+message Address {
+  string street_address = 1;
+  string city = 2;
+  string state = 3;
+  string country = 4;
+  string zip_code = 5;
+}
+
+// CartItem is a single line in a cart.
+message CartItem {
+  string product_id = 1;
+  int32 quantity = 2;
+  Money unit_price = 3; // denormalized snapshot at add time
+}
+
+// Health check shared by all services.
+message HealthCheckRequest {
+  string service = 1;
+}
+
+message HealthCheckResponse {
+  enum ServingStatus {
+    UNKNOWN = 0;
+    SERVING = 1;
+    NOT_SERVING = 2;
+  }
+  ServingStatus status = 1;
+}
+
+service Health {
+  rpc Check(HealthCheckRequest) returns (HealthCheckResponse);
+}
+

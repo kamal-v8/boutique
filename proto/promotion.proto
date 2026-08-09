@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package ecommerce.promotion;
+
+option go_package = "ecommerce/promotion";
+
+import "common.proto";
+
+// DiscountType enum
+enum DiscountType {
+  PERCENT = 0;
+  FIXED_AMOUNT = 1;
+}
+
+message Coupon {
+  string code = 1;
+  string description = 2;
+  DiscountType type = 3;
+  int64 value = 4;            // percent (e.g. 20) or fixed amount in minor units
+  int64 min_subtotal_units = 5; // minimum order subtotal (minor units) to apply
+  string currency_code = 6;
+  int64 expires_at = 7;       // unix seconds; 0 = never
+  int32 max_uses = 8;         // 0 = unlimited
+  bool active = 9;
+  int64 created_at = 10;
+}
+
+message GetCouponRequest {
+  string code = 1;
+}
+
+message ValidateCouponRequest {
+  string code = 1;
+  // subtotal in minor units, used to check min_subtotal
+  int64 subtotal_units = 2;
+  int64 user_uses = 3; // number of times this user already used it
+}
+
+message CouponResponse {
+  Coupon coupon = 1;
+  bool valid = 2;
+  string reason = 3;
+  // computed discount in minor units given the subtotal
+  int64 discount_units = 4;
+}
+
+message ListCouponsRequest {
+  int32 page = 1;
+  int32 page_size = 2;
+}
+
+message CouponListResponse {
+  repeated Coupon coupons = 1;
+  int32 total = 2;
+}
+
+message CreateCouponRequest {
+  Coupon coupon = 1;
+}
+
+message UpdateCouponRequest {
+  Coupon coupon = 1;
+}
+
+message DeleteCouponRequest {
+  string code = 1;
+}
+
+message IncrementUsedRequest {
+  string code = 1;
+}
+
+service PromotionService {
+  rpc GetCoupon(GetCouponRequest) returns (CouponResponse);
+  rpc ValidateCoupon(ValidateCouponRequest) returns (CouponResponse);
+  rpc ListCoupons(ListCouponsRequest) returns (CouponListResponse);
+  rpc CreateCoupon(CreateCouponRequest) returns (Coupon);
+  rpc UpdateCoupon(UpdateCouponRequest) returns (Coupon);
+  rpc DeleteCoupon(DeleteCouponRequest) returns (common.Empty);
+  rpc IncrementUsed(IncrementUsedRequest) returns (common.Empty);
+}

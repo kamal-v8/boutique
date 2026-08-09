@@ -1,0 +1,17 @@
+node_modules/
+.next/
+out/
+dist/
+.build/
+.env
+.env.local
+*.log
+.DS_Store
+.idea/
+.vscode/
+coverage/
+
+# Compiled Go service binaries (built by Dockerfile / go build)
+services/checkoutservice/checkoutservice
+services/shippingservice/shippingservice
+

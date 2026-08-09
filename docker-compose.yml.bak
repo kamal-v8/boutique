@@ -1,0 +1,195 @@
+name: boutique
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    ports:
+      - "8025:8025" # web UI
+      - "1025:1025" # SMTP
+    profiles: ["email"]
+
+  # --- Identity ---
+  authservice:
+    build:
+      context: .
+      dockerfile: services/authservice/Dockerfile
+      network: host
+    environment:
+      PORT: "50051"
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/users_db
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@boutique.dev}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin123!}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "50051:50051"
+
+  # --- Catalog + Promotions ---
+  productcatalog:
+    build:
+      context: ./services/productcatalog
+    environment:
+      PORT: "50052"
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/products_db?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "50052:50052"
+
+  promotionservice:
+    build:
+      context: ./services/promotionservice
+    environment:
+      PORT: "50059"
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/products_db?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "50059:50059"
+
+  # --- Cart ---
+  cartservice:
+    build:
+      context: .
+      dockerfile: services/cartservice/Dockerfile
+      network: host
+    environment:
+      PORT: "50053"
+      REDIS_ADDR: redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "50053:50053"
+
+  # --- Fulfillment ---
+  checkoutservice:
+    build:
+      context: ./services/checkoutservice
+    environment:
+      PORT: "50054"
+      CART_SERVICE_ADDR: cartservice:50053
+      PRODUCT_SERVICE_ADDR: productcatalog:50052
+      PROMOTION_SERVICE_ADDR: promotionservice:50059
+      SHIPPING_SERVICE_ADDR: shippingservice:50057
+      ORDER_SERVICE_ADDR: orderservice:50055
+      PAYMENT_SERVICE_ADDR: paymentservice:50056
+      EMAIL_SERVICE_ADDR: emailservice:50058
+    depends_on:
+      - cartservice
+      - productcatalog
+      - promotionservice
+      - shippingservice
+      - orderservice
+      - paymentservice
+      - emailservice
+    ports:
+      - "50054:50054"
+
+  orderservice:
+    build:
+      context: .
+      dockerfile: services/orderservice/Dockerfile
+      network: host
+    environment:
+      PORT: "50055"
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/orders_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "50055:50055"
+
+  paymentservice:
+    build:
+      context: .
+      dockerfile: services/paymentservice/Dockerfile
+      network: host
+    environment:
+      PORT: "50056"
+    ports:
+      - "50056:50056"
+
+  shippingservice:
+    build:
+      context: ./services/shippingservice
+    environment:
+      PORT: "50057"
+    ports:
+      - "50057:50057"
+
+  emailservice:
+    build:
+      context: .
+      dockerfile: services/emailservice/Dockerfile
+      network: host
+    environment:
+      PORT: "50058"
+      SMTP_HOST: mailhog
+      SMTP_PORT: "1025"
+      ORDER_SERVICE_ADDR: orderservice:50055
+      AUTH_SERVICE_ADDR: authservice:50051
+    ports:
+      - "50058:50058"
+    depends_on:
+      - orderservice
+      - authservice
+
+  # --- BFF / Frontend ---
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      network: host
+    environment:
+      PORT: "8080"
+      AUTH_SERVICE_ADDR: authservice:50051
+      PRODUCT_SERVICE_ADDR: productcatalog:50052
+      CART_SERVICE_ADDR: cartservice:50053
+      PROMOTION_SERVICE_ADDR: promotionservice:50059
+      CHECKOUT_SERVICE_ADDR: checkoutservice:50054
+      ORDER_SERVICE_ADDR: orderservice:50055
+      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
+    depends_on:
+      - authservice
+      - productcatalog
+      - cartservice
+      - promotionservice
+      - checkoutservice
+      - orderservice
+    ports:
+      - "8080:8080"
+
+volumes:
+  pgdata:

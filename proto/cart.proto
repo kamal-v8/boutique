@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package ecommerce.cart;
+
+option go_package = "ecommerce/cart";
+
+import "common.proto";
+
+message GetCartRequest {
+  string cart_id = 1;     // guest id for anonymous, user id for logged in
+  string user_id = 2;
+}
+
+message Cart {
+  string id = 1;
+  string user_id = 2;
+  repeated common.CartItem items = 3;
+  common.Money total = 4;
+}
+
+message AddItemRequest {
+  string cart_id = 1;
+  string user_id = 2;
+  string product_id = 3;
+  int32 quantity = 4;
+}
+
+message UpdateItemRequest {
+  string cart_id = 1;
+  string user_id = 2;
+  string product_id = 3;
+  int32 quantity = 4; // set absolute quantity (0 removes)
+}
+
+message RemoveItemRequest {
+  string cart_id = 1;
+  string user_id = 2;
+  string product_id = 3;
+}
+
+message EmptyCartRequest {
+  string cart_id = 1;
+  string user_id = 2;
+}
+
+message MergeCartsRequest {
+  string guest_cart_id = 1;
+  string user_id = 2;
+}
+
+service CartService {
+  rpc GetCart(GetCartRequest) returns (Cart);
+  rpc AddItem(AddItemRequest) returns (Cart);
+  rpc UpdateItem(UpdateItemRequest) returns (Cart);
+  rpc RemoveItem(RemoveItemRequest) returns (Cart);
+  rpc EmptyCart(EmptyCartRequest) returns (common.Empty);
+  rpc MergeCarts(MergeCartsRequest) returns (Cart);
+}

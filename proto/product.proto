@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package ecommerce.product;
+
+option go_package = "ecommerce/product";
+
+import "common.proto";
+
+message Product {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  common.Money price = 4;
+  repeated string categories = 5;
+  string picture = 6;
+  int32 stock = 7;
+  string sku = 8;
+  bool active = 9;
+}
+
+message ListProductsRequest {
+  string category = 1;
+  string query = 2;        // free-text search
+  int32 page = 3;          // 1-based
+  int32 page_size = 4;
+  string sort = 5;         // featured | price_asc | price_desc | newest
+}
+
+message ListProductsResponse {
+  repeated Product products = 1;
+  int32 total = 2;
+  int32 page = 3;
+  int32 pages = 4;
+}
+
+message GetProductRequest {
+  string id = 1;
+}
+
+message CreateProductRequest {
+  Product product = 1;
+}
+
+message UpdateProductRequest {
+  Product product = 1;
+}
+
+message DeleteProductRequest {
+  string id = 1;
+}
+
+message GetStockRequest {
+  string id = 1;
+  int32 quantity = 2;
+}
+
+message StockResponse {
+  bool available = 1;
+  int32 available_count = 2;
+}
+
+message UpdateStockRequest {
+  string id = 1;
+  // negative decrements, positive increments
+  int64 delta = 2;
+}
+
+message ListCategoriesResponse {
+  repeated Category categories = 1;
+}
+
+message Category {
+  string name = 1;
+  int32 product_count = 2;
+}
+
+service ProductService {
+  rpc ListProducts(ListProductsRequest) returns (ListProductsResponse);
+  rpc GetProduct(GetProductRequest) returns (Product);
+  rpc ListCategories(common.Empty) returns (ListCategoriesResponse);
+  rpc CreateProduct(CreateProductRequest) returns (Product);
+  rpc UpdateProduct(UpdateProductRequest) returns (Product);
+  rpc DeleteProduct(DeleteProductRequest) returns (common.Empty);
+  rpc CheckStock(GetStockRequest) returns (StockResponse);
+  rpc UpdateStock(UpdateStockRequest) returns (StockResponse);
+}

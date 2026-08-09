@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package ecommerce.shipping;
+
+option go_package = "ecommerce/shipping";
+
+import "common.proto";
+
+message ShippingOption {
+  string id = 1;
+  string name = 2;
+  common.Money price = 3;
+  int32 estimated_days = 4;
+}
+
+message GetQuoteRequest {
+  common.Address address = 1;
+}
+
+message GetQuoteResponse {
+  repeated ShippingOption options = 1;
+}
+
+message ShipOrderRequest {
+  string order_id = 1;
+  common.Address address = 2;
+  string option_id = 3;
+}
+
+message ShipOrderResponse {
+  string tracking_id = 1;
+  string carrier = 2;
+}
+
+service ShippingService {
+  rpc GetQuote(GetQuoteRequest) returns (GetQuoteResponse);
+  rpc ShipOrder(ShipOrderRequest) returns (ShipOrderResponse);
+}

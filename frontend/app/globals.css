@@ -1,0 +1,181 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --base: #e4e2dd;
+  --ink: #1e1e1e;
+  --accent: #db4a2b;
+  --ember: #f8a348;
+  --blush: #ff89a9;
+  --panel: #d9d6d0;
+  --font-display-fallback: ui-sans-serif, system-ui, "Arial Narrow", sans-serif;
+  --font-body-fallback: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+html {
+  background: var(--base);
+  color: var(--ink);
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: Satoshi, var(--font-body-fallback);
+  background: var(--base);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Brutalist scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--base);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent);
+}
+
+/* Display type scale */
+.display {
+  font-family: "Clash Display", var(--font-display-fallback);
+  font-weight: 700;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  text-transform: uppercase;
+}
+
+.label {
+  font-family: Satoshi, var(--font-body-fallback);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  font-size: 12px;
+}
+
+/* Animated gradient blobs */
+.blob {
+  position: absolute;
+  width: 60vw;
+  height: 60vw;
+  border-radius: 9999px;
+  filter: blur(140px);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+
+/* Slide-fill CTA button */
+.btn-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--ink);
+  color: var(--base);
+  padding: 1rem 1.75rem;
+  overflow: hidden;
+  isolation: isolate;
+  transition: color 0.3s ease-out;
+  font-family: Satoshi, var(--font-body-fallback);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 14px;
+}
+.btn-cta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-out;
+  z-index: -1;
+}
+.btn-cta:hover::before {
+  transform: translateX(0);
+}
+.btn-cta:hover {
+  color: var(--accent);
+}
+
+.btn-ghost {
+  color: var(--accent);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.btn-ghost:hover {
+  opacity: 0.7;
+}
+
+/* Entrance animation utility */
+.reveal {
+  animation: slide-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Link underline hover */
+.nav-link {
+  position: relative;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0;
+  height: 2px;
+  background: var(--accent);
+  transition: width 0.3s ease-out;
+}
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Product card hover title color shift */
+.product-title {
+  transition: color 0.25s ease-out;
+}
+.product-card:hover .product-title {
+  color: var(--blush);
+}
+.product-card .product-image {
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.product-card:hover .product-image {
+  transform: scale(1.05);
+}
+
+/* Input base (brutalist) */
+.input {
+  background: transparent;
+  border: 1px solid rgba(30, 30, 30, 0.25);
+  padding: 0.75rem 1rem;
+  width: 100%;
+  font-family: Satoshi, var(--font-body-fallback);
+  outline: none;
+  transition: border-color 0.2s ease-out;
+}
+.input:focus {
+  border-color: var(--ink);
+}
+
+/* Year watermark in footer */
+.watermark {
+  font-family: "Clash Display", var(--font-display-fallback);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.08);
+  font-size: 10vw;
+  line-height: 1;
+}

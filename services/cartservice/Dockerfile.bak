@@ -1,0 +1,15 @@
+FROM node:22-alpine AS build
+WORKDIR /usr/src/app
+COPY proto/ ./proto
+COPY services/cartservice/package*.json ./
+RUN npm ci --omit=dev
+COPY services/cartservice/ ./
+
+FROM node:22-alpine
+WORKDIR /usr/src/app
+ENV NODE_ENV=production
+ENV PROTO_DIR=/usr/src/app/proto
+COPY --from=build /usr/src/app/node_modules ./node_modules
+COPY --from=build /usr/src/app ./
+EXPOSE 50053
+CMD ["node", "index.js"]

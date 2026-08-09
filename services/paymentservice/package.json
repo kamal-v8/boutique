@@ -1,0 +1,13 @@
+{
+  "name": "paymentservice",
+  "version": "1.0.0",
+  "description": "Mock payment processing gRPC microservice",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@grpc/grpc-js": "^1.12.0",
+    "@grpc/proto-loader": "^0.7.13"
+  }
+}

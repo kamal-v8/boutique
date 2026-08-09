@@ -1,0 +1,27 @@
+
+# Dependencies / build output
+node_modules
+.next
+out
+dist
+coverage
+*.tsbuildinfo
+
+# Go (vendored per-service; excluded from repo-root contexts)
+vendor
+checkoutservice
+shippingservice
+
+# Env / secrets / logs
+.env
+.env.local
+.env.*.local
+*.log
+
+# VCS / editor / OS
+.git
+.gitignore
+.gitattributes
+.DS_Store
+.idea
+.vscode

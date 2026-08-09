@@ -1,0 +1,9 @@
+go 1.26.2
+
+use (
+	./shared
+	./services/productcatalog
+	./services/checkoutservice
+	./services/shippingservice
+	./services/promotionservice
+)

@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package ecommerce.email;
+
+option go_package = "ecommerce/email";
+
+import "common.proto";
+
+message OrderConfirmationRequest {
+  string email = 1;
+  string order_id = 2;
+  string user_name = 3;
+  common.Money total = 4;
+  int32 item_count = 5;
+}
+
+message SendOrderConfirmationRequest {
+  string user_id = 1;
+  string order_id = 2;
+}
+
+message SendResponse {
+  bool sent = 1;
+  string message = 2;
+}
+
+service EmailService {
+  // Confirm a mock payment/order confirmation email was sent.
+  rpc SendOrderConfirmation(SendOrderConfirmationRequest) returns (SendResponse);
+}
