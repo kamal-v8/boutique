@@ -51,9 +51,9 @@ Critical gotchas (they WILL break a naive pipeline):
 **Goal:** clean, reproducible repo. Everything else depends on this.
 
 - [x] `git add -A` + first commit ("working baseline: full app + compose + dev.sh"). Add a `.gitattributes` (`*.sh text eol=lf`).
-- [ ] Audit `.gitignore`: `node_modules/`, `.build/`, `.next/`, Go binaries (`services/checkoutservice/checkoutservice`, `services/shippingservice/shippingservice`), `.env`, `*.log`.
+- [x] Audit `.gitignore`: `node_modules/`, `.build/`, `.next/`, Go binaries (`services/checkoutservice/checkoutservice`, `services/shippingservice/shippingservice`), `.env`, `*.log`.
 - [ ] `docs/architecture.md`: service map, ports, DBs, data flow (browser → BFF → gRPC), env vars per service. Pull from `docker-compose.yml` — it's the source of truth.
-- [ ] Confirm: fresh clone → `docker compose up --build` → storefront at :8080, admin login works.
+- [x] Confirm: fresh clone → `docker compose up --build` → storefront at :8080, admin login works.
 - **Gate:** a clean clone reproduces the stack with one command.
 
 ## Phase 1 — CI foundation (2–3 days)
