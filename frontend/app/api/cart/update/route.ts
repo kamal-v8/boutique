@@ -11,7 +11,7 @@ export async function POST(req: NextRequest) {
   if (!productId || typeof productId !== 'string' || !Number.isInteger(quantity) || quantity <= 0) {
     return NextResponse.json({ error: 'product_id and a positive integer quantity are required' }, { status: 400 });
   }
-  const { id, userId } = ensureCartId();
+  const { id, userId } = await ensureCartId();
   const cart = await updateCartItem(id, userId, productId, quantity);
   const count = (cart.items || []).reduce((n, i) => n + (i.quantity || 0), 0);
   return NextResponse.json({ count });

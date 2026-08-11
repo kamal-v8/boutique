@@ -21,7 +21,7 @@ export async function validateToken(accessToken: string): Promise<User | null> {
 
 /** Returns the current logged-in user by validating the cookie access token. */
 export async function currentUser(): Promise<User | null> {
-  const store = cookies();
+  const store = await cookies();
   const token = store.get(COOKIE_ACCESS)?.value;
   if (!token) return null;
   return validateToken(token);
@@ -34,8 +34,8 @@ export async function requireAdmin(): Promise<User | null> {
   return user;
 }
 
-export function cartIdFromCookies(): { id: string; userId: string | null } {
-  const store = cookies();
+export async function cartIdFromCookies(): Promise<{ id: string; userId: string | null }> {
+  const store = await cookies();
   const uid = store.get(COOKIE_UID)?.value || null;
   const guest = store.get(COOKIE_CART)?.value || null;
   if (uid) return { id: uid, userId: uid };
@@ -43,8 +43,8 @@ export function cartIdFromCookies(): { id: string; userId: string | null } {
 }
 
 /** Returns the cart id to use, creating + persisting a guest cart cookie when needed. */
-export function ensureCartId(): { id: string; userId: string | null } {
-  const store = cookies();
+export async function ensureCartId(): Promise<{ id: string; userId: string | null }> {
+  const store = await cookies();
   const uid = store.get(COOKIE_UID)?.value || null;
   if (uid) return { id: uid, userId: uid };
   let guest = store.get(COOKIE_CART)?.value;

@@ -7,7 +7,7 @@ import { CartLineControls } from '@/components/CartLineControls';
 export const dynamic = 'force-dynamic';
 
 export default async function CartPage() {
-  const { id, userId } = cartIdFromCookies();
+  const { id, userId } = await cartIdFromCookies();
   const cart = await enrichCart(id, userId).catch(() => null);
 
   return (

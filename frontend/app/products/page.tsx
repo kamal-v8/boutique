@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Suspense } from 'react';
 import { ProductGrid } from '@/components/ProductCard';
 import { SortSelect } from '@/components/SortSelect';
 import { listProducts, listCategories } from '@/lib/api';
@@ -51,7 +52,9 @@ export default async function ProductsPage({ searchParams }: { searchParams: { [
           </form>
           {/* Sort */}
           <div className="flex items-center">
-            <SortSelect value={sort} category={category} query={query} />
+            <Suspense fallback={null}>
+              <SortSelect value={sort} category={category} query={query} />
+            </Suspense>
           </div>
         </div>
       </div>

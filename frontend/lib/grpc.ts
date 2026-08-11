@@ -24,7 +24,7 @@ let cached: Pkg | null = null;
 function load() {
   if (cached) return cached;
   const definition = protoLoader.loadSync(
-    PROTO_FILES.map((f) => path.join(PROTO_DIR, f)),
+    PROTO_FILES.map((f) => path.join(/*turbopackIgnore: true*/ PROTO_DIR, f)),
     {
       keepCase: true,
       longs: String,

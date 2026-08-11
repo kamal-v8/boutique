@@ -10,7 +10,7 @@ export default async function CheckoutPage() {
   const user = await currentUser();
   if (!user) redirect('/account?next=/checkout');
 
-  const { id, userId } = cartIdFromCookies();
+  const { id, userId } = await cartIdFromCookies();
   const cart = await enrichCart(id, userId).catch(() => null);
   if (!cart || cart.lines.length === 0) redirect('/cart');
 

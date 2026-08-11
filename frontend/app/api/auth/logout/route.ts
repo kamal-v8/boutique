@@ -7,7 +7,7 @@ import { clearAuthCookies } from '@/lib/session';
 export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
-  const store = cookies();
+  const store = await cookies();
   const token = store.get(COOKIE_REFRESH)?.value;
   if (token) {
     try {

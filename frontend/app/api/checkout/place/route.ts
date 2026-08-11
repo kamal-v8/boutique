@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'complete shipping address required' }, { status: 400 });
   }
 
-  const { id: cartId } = cartIdFromCookies();
+  const { id: cartId } = await cartIdFromCookies();
 
   try {
     const res = await placeOrder({

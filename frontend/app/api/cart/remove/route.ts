@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
   if (!productId || typeof productId !== 'string') {
     return NextResponse.json({ error: 'product_id is required' }, { status: 400 });
   }
-  const { id, userId } = ensureCartId();
+  const { id, userId } = await ensureCartId();
   const cart = await removeCartItem(id, userId, productId);
   const count = (cart.items || []).reduce((n, i) => n + (i.quantity || 0), 0);
   return NextResponse.json({ count });

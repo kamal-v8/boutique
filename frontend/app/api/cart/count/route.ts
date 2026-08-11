@@ -5,7 +5,7 @@ import { getRawCart } from '@/lib/cart';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const { id, userId } = ensureCartId();
+  const { id, userId } = await ensureCartId();
   const cart = await getRawCart(id, userId);
   const count = (cart.items || []).reduce((n, i) => n + (i.quantity || 0), 0);
   return NextResponse.json({ count });
