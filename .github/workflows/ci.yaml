@@ -31,7 +31,7 @@ jobs:
       - name: Test
         run: npm test
 
-  backend:
+  Node-Services:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -61,7 +61,7 @@ jobs:
 
       - name: Test
         run: |
-          test_script=$(node -p "try{require('./package.json').scripts.test}catch(e){''}")
+          test_script=$(node -p "const s=require('./package.json').scripts||{}; s.test||''")
           if [ -n "$test_script" ]; then
             npm test
           else
