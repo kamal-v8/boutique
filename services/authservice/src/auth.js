@@ -19,7 +19,7 @@ function signAccessToken(user) {
   );
 }
 
-function newRefreshToken(user) {
+function newRefreshToken() {
   const token = crypto.randomBytes(48).toString('hex');
   return { token, jti: hashToken(token), expiresAt: Math.floor(Date.now() / 1000) + REFRESH_TTL_SECONDS };
 }

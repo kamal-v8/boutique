@@ -4,7 +4,7 @@ const argon2 = require('argon2');
 const crypto = require('crypto');
 
 const { pool } = require('./db');
-const { signAccessToken, newRefreshToken, verifyToken, hashToken, REFRESH_TTL_SECONDS } = require('./auth');
+const { signAccessToken, newRefreshToken, verifyToken, hashToken } = require('./auth');
 
 const grpc = require('@grpc/grpc-js');
 
@@ -26,7 +26,7 @@ function toProtoUser(row) {
 async function issueTokens(call, userRow) {
   const user = toProtoUser(userRow);
   const accessToken = signAccessToken(user);
-  const { token: refreshToken, jti, expiresAt } = newRefreshToken(user);
+  const { token: refreshToken, jti, expiresAt } = newRefreshToken();
   await pool.query(
     'INSERT INTO refresh_tokens (token_hash, user_id, expires_at, revoked) VALUES ($1, $2, $3, FALSE)',
     [jti, userRow.id, expiresAt]
