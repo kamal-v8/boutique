@@ -3,15 +3,15 @@ package main
 import (
 	"context"
 
-	commonpb "ecommerce/common"
 	cartpb "ecommerce/cart"
 	checkoutpb "ecommerce/checkout"
-	orderpb "ecommerce/order"
-	promopb "ecommerce/promotion"
-	paymentpb "ecommerce/payment"
-	shippingpb "ecommerce/shipping"
+	commonpb "ecommerce/common"
 	emailpb "ecommerce/email"
+	orderpb "ecommerce/order"
+	paymentpb "ecommerce/payment"
 	productpb "ecommerce/product"
+	promopb "ecommerce/promotion"
+	shippingpb "ecommerce/shipping"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )

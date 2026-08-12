@@ -4,14 +4,14 @@ import (
 	"log"
 	"sync"
 
-	commonpb "ecommerce/common"
 	cartpb "ecommerce/cart"
+	commonpb "ecommerce/common"
+	emailpb "ecommerce/email"
+	orderpb "ecommerce/order"
+	paymentpb "ecommerce/payment"
 	productpb "ecommerce/product"
 	promopb "ecommerce/promotion"
 	shippingpb "ecommerce/shipping"
-	orderpb "ecommerce/order"
-	paymentpb "ecommerce/payment"
-	emailpb "ecommerce/email"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

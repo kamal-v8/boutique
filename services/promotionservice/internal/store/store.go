@@ -46,6 +46,6 @@ func (s *Store) migrate() error {
 	return err
 }
 
-func (s *Store) DB() *sql.DB { return s.db }
+func (s *Store) DB() *sql.DB  { return s.db }
 func (s *Store) Close() error { return s.db.Close() }
 func nowUnix() int64          { return time.Now().Unix() }

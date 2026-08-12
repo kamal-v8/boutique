@@ -190,4 +190,3 @@ func (s *Store) Seed() error {
 	}
 	return nil
 }
-

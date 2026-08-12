@@ -500,6 +500,7 @@ type UpdateOrderStatusRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
 	Status        string                 `protobuf:"bytes,2,opt,name=status,proto3" json:"status,omitempty"`
+	TrackingId    string                 `protobuf:"bytes,3,opt,name=tracking_id,json=trackingId,proto3" json:"tracking_id,omitempty"` // optional — persisted when a shipment is created
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -544,6 +545,13 @@ func (x *UpdateOrderStatusRequest) GetId() string {
 func (x *UpdateOrderStatusRequest) GetStatus() string {
 	if x != nil {
 		return x.Status
+	}
+	return ""
+}
+
+func (x *UpdateOrderStatusRequest) GetTrackingId() string {
+	if x != nil {
+		return x.TrackingId
 	}
 	return ""
 }
@@ -642,10 +650,12 @@ const file_order_proto_rawDesc = "" +
 	"\tpage_size\x18\x03 \x01(\x05R\bpageSize\"Z\n" +
 	"\x12ListOrdersResponse\x12.\n" +
 	"\x06orders\x18\x01 \x03(\v2\x16.ecommerce.order.OrderR\x06orders\x12\x14\n" +
-	"\x05total\x18\x02 \x01(\x05R\x05total\"B\n" +
+	"\x05total\x18\x02 \x01(\x05R\x05total\"c\n" +
 	"\x18UpdateOrderStatusRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x16\n" +
-	"\x06status\x18\x02 \x01(\tR\x06status\"F\n" +
+	"\x06status\x18\x02 \x01(\tR\x06status\x12\x1f\n" +
+	"\vtracking_id\x18\x03 \x01(\tR\n" +
+	"trackingId\"F\n" +
 	"\x13GetAllOrdersRequest\x12\x12\n" +
 	"\x04page\x18\x01 \x01(\x05R\x04page\x12\x1b\n" +
 	"\tpage_size\x18\x02 \x01(\x05R\bpageSize*m\n" +

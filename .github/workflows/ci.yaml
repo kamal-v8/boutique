@@ -67,3 +67,32 @@ jobs:
           else
             echo "No test script defined, skipping"
           fi
+
+  Go-Services:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        service:
+          [productservice, checkoutservice, shippingservice, promotionservice]
+
+    defaults:
+      run:
+        working-directory: ./services/${{ matrix.service }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.20"
+          cache: true
+
+      - name: Build
+        run: GOWORK=off go build -mod=vendor ./${{ matrix.service }}
+
+      - name: Lint
+        run: go vet .
+      - name: Test
+        run: go test .
