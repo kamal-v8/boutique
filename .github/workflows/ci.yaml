@@ -30,3 +30,34 @@ jobs:
 
       - name: Test
         run: npm test
+
+  backend:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service:
+          [authservice, cartservice, orderservice, paymentservice, emailservice]
+
+    defaults:
+      run:
+        working-directory: ./services/${{ matrix.service  }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: services/${{ matrix.service }}
+
+      - name: Install Dependencies
+        run: npm  install
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test

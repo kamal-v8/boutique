@@ -4,11 +4,17 @@
   "description": "Email notifications gRPC microservice (mock/Mailhog)",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.12.0",
     "@grpc/proto-loader": "^0.7.13",
     "nodemailer": "^6.9.0"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.6",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.8.1"
   }
 }
