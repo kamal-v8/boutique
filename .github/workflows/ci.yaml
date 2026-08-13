@@ -90,7 +90,7 @@ jobs:
           cache: true
 
       - name: Build
-        run: GOWORK=off go build -mod=vendor ./..
+        run: GOWORK=off go build -mod=vendor ./...
 
       - name: Lint
-        run: go vet ./..
+        run: go vet ./...
