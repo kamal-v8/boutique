@@ -137,6 +137,24 @@ async function main() {
   const server = new grpc.Server();
   server.addService(pkg.CartService.service, handlers);
 
+  // Standard grpc.health.v1 health service (for grpc_health_probe).
+  const healthProto = protoLoader.loadSync(path.join(PROTO_DIR, 'health.proto'), {
+    keepCase: true,
+    longs: String,
+    defaults: true,
+  });
+  const health = grpc.loadPackageDefinition(healthProto).grpc.health.v1;
+  server.addService(health.Health.service, {
+    Check: async (call, callback) => {
+      try {
+        await client.ping();
+        callback(null, { status: 'SERVING' });
+      } catch {
+        callback(null, { status: 'NOT_SERVING' });
+      }
+    },
+  });
+
   server.bindAsync(`0.0.0.0:${PORT}`, grpc.ServerCredentials.createInsecure(), (err, port) => {
     if (err) {
       console.error('[cartservice] bind failed', err);

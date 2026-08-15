@@ -13,6 +13,7 @@ import (
 	"ecommerce/productcatalog/internal/store"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/status"
 )
 
@@ -20,6 +21,18 @@ type server struct {
 	productpb.UnimplementedProductServiceServer
 	commonpb.UnimplementedHealthServer
 	st *store.Store
+}
+
+type healthServer struct {
+	grpc_health_v1.UnimplementedHealthServer
+	db *sql.DB
+}
+
+func (h *healthServer) Check(ctx context.Context, _ *grpc_health_v1.HealthCheckRequest) (*grpc_health_v1.HealthCheckResponse, error) {
+	if err := h.db.PingContext(ctx); err != nil {
+		return &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_NOT_SERVING}, nil
+	}
+	return &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}, nil
 }
 
 func (s *server) Check(ctx context.Context, _ *commonpb.HealthCheckRequest) (*commonpb.HealthCheckResponse, error) {
@@ -138,6 +151,7 @@ func main() {
 	gs := grpc.NewServer()
 	productpb.RegisterProductServiceServer(gs, srv)
 	commonpb.RegisterHealthServer(gs, srv)
+	grpc_health_v1.RegisterHealthServer(gs, &healthServer{db: st.DB()})
 	log.Printf("[productcatalog] listening on 0.0.0.0:%s", port)
 	if err := gs.Serve(lis); err != nil {
 		log.Fatalf("[productcatalog] serve: %v", err)

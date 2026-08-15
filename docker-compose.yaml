@@ -42,7 +42,6 @@ services:
     build:
       context: .
       dockerfile: services/authservice/Dockerfile
-      network: host
     environment:
       PORT: "50051"
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/users_db
@@ -59,7 +58,6 @@ services:
     build:
       context: .
       dockerfile: services/cartservice/Dockerfile
-      network: host
     environment:
       PORT: "50053"
       REDIS_ADDR: redis:6379
@@ -72,7 +70,6 @@ services:
     container_name: checkoutservice
     build:
       context: ./services/checkoutservice
-      network: host
     environment:
       PORT: "50054"
       CART_SERVICE_ADDR: cartservice:50053
@@ -97,7 +94,6 @@ services:
     build:
       context: .
       dockerfile: services/emailservice/Dockerfile
-      network: host
     environment:
       PORT: "50058"
       SMTP_HOST: mailhog
@@ -113,7 +109,6 @@ services:
     build:
       context: .
       dockerfile: services/orderservice/Dockerfile
-      network: host
     environment:
       PORT: "50055"
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/orders_db
@@ -128,7 +123,6 @@ services:
     build:
       context: .
       dockerfile: services/paymentservice/Dockerfile
-      network: host
     ports:
       - "50056:50056"
     environment:
@@ -136,7 +130,6 @@ services:
   productcatalog:
     build:
       context: ./services/productcatalog/
-      network: host
     environment:
       PORT: "50052"
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/products_db?sslmode=disable
@@ -149,7 +142,6 @@ services:
   promotionservice:
     build:
       context: ./services/promotionservice/
-      network: host
     environment:
       PORT: "50059"
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/products_db?sslmode=disable
@@ -170,9 +162,8 @@ services:
     build:
       context: .
       dockerfile: ./frontend/Dockerfile
-      network: host
     environment:
-      PORT:
+      PORT: 8080
       AUTH_SERVICE_ADDR: authservice:50051
       PRODUCT_SERVICE_ADDR: productcatalog:50052
       CART_SERVICE_ADDR: cartservice:50053

@@ -6,8 +6,9 @@ import { AddToCartButton } from '@/components/AddToCartButton';
 
 export const dynamic = 'force-dynamic';
 
-export default async function ProductPage({ params }: { params: { id: string } }) {
-  const product = await getProduct(params.id).catch(() => null);
+export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const product = await getProduct(id).catch(() => null);
   if (!product) notFound();
 
   return (

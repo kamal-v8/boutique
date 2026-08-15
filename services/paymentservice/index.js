@@ -35,6 +35,17 @@ function main() {
   const server = new grpc.Server();
   server.addService(pkg.PaymentService.service, handlers);
 
+  // Standard grpc.health.v1 health service (for grpc_health_probe).
+  const healthProto = protoLoader.loadSync(path.join(PROTO_DIR, 'health.proto'), {
+    keepCase: true,
+    longs: String,
+    defaults: true,
+  });
+  const health = grpc.loadPackageDefinition(healthProto).grpc.health.v1;
+  server.addService(health.Health.service, {
+    Check: (call, callback) => callback(null, { status: 'SERVING' }),
+  });
+
   server.bindAsync(`0.0.0.0:${PORT}`, grpc.ServerCredentials.createInsecure(), (err, port) => {
     if (err) {
       console.error('[paymentservice] bind failed', err);

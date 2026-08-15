@@ -4,6 +4,8 @@ import { Blobs } from '@/components/Blobs';
 import { ProductGrid } from '@/components/ProductCard';
 import { listProducts, listCategories } from '@/lib/api';
 
+export const dynamic = 'force-dynamic';
+
 export default async function HomePage() {
   const featured = await listProducts({ pageSize: 6, sort: 'featured' }).catch(() => ({ products: [], total: 0, page: 1, pages: 1 }));
   const cats = await listCategories().catch(() => []);

@@ -4,12 +4,13 @@ import { ProductGrid } from '@/components/ProductCard';
 import { SortSelect } from '@/components/SortSelect';
 import { listProducts, listCategories } from '@/lib/api';
 
-export default async function ProductsPage({ searchParams }: { searchParams: { [k: string]: string | string[] | undefined } }) {
-  const sp = (k: string) => (Array.isArray(searchParams[k]) ? (searchParams[k] as string[])[0] : searchParams[k]) || '';
-  const category = sp('category');
-  const query = sp('q') || sp('query');
-  const sort = sp('sort') || 'featured';
-  const page = parseInt(sp('page') || '1', 10);
+export default async function ProductsPage({ searchParams }: { searchParams: Promise<{ [k: string]: string | string[] | undefined }> }) {
+  const params = await searchParams;
+  const p = (k: string) => (Array.isArray(params[k]) ? (params[k] as string[])[0] : params[k]) || '';
+  const category = p('category');
+  const query = p('q') || p('query');
+  const sort = p('sort') || 'featured';
+  const page = parseInt(p('page') || '1', 10);
 
   const [data, cats] = await Promise.all([
     listProducts({ category, query, sort, page, pageSize: 9 }).catch(() => ({ products: [], total: 0, page: 1, pages: 1 })),

@@ -13,6 +13,7 @@ import (
 	"ecommerce/promotionservice/internal/store"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/status"
 )
 
@@ -20,6 +21,18 @@ type server struct {
 	promopb.UnimplementedPromotionServiceServer
 	commonpb.UnimplementedHealthServer
 	st *store.Store
+}
+
+type healthServer struct {
+	grpc_health_v1.UnimplementedHealthServer
+	db *sql.DB
+}
+
+func (h *healthServer) Check(ctx context.Context, _ *grpc_health_v1.HealthCheckRequest) (*grpc_health_v1.HealthCheckResponse, error) {
+	if err := h.db.PingContext(ctx); err != nil {
+		return &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_NOT_SERVING}, nil
+	}
+	return &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}, nil
 }
 
 func (s *server) Check(ctx context.Context, _ *commonpb.HealthCheckRequest) (*commonpb.HealthCheckResponse, error) {
@@ -123,6 +136,7 @@ func main() {
 	gs := grpc.NewServer()
 	promopb.RegisterPromotionServiceServer(gs, srv)
 	commonpb.RegisterHealthServer(gs, srv)
+	grpc_health_v1.RegisterHealthServer(gs, &healthServer{db: st.DB()})
 	log.Printf("[promotionservice] listening on 0.0.0.0:%s", port)
 	if err := gs.Serve(lis); err != nil {
 		log.Fatalf("[promotionservice] serve: %v", err)

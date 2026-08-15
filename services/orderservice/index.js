@@ -25,13 +25,20 @@ async function main() {
 
   const server = new grpc.Server();
   server.addService(pkg.ecommerce.order.OrderService.service, handlers);
-  server.addService(pkg.ecommerce.common.Health.service, {
+  // Standard grpc.health.v1 health service (for grpc_health_probe).
+  const healthProto = protoLoader.loadSync(path.join(PROTO_DIR, 'health.proto'), {
+    keepCase: true,
+    longs: String,
+    defaults: true,
+  });
+  const health = grpc.loadPackageDefinition(healthProto).grpc.health.v1;
+  server.addService(health.Health.service, {
     Check: async (call, callback) => {
       try {
         await pool.query('SELECT 1');
-        callback(null, { status: 1 });
+        callback(null, { status: 'SERVING' });
       } catch {
-        callback(null, { status: 2 });
+        callback(null, { status: 'NOT_SERVING' });
       }
     },
   });

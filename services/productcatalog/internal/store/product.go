@@ -127,6 +127,8 @@ func (s *Store) ListProducts(category, query string, page, pageSize int, sort st
 
 	order := "p.name ASC"
 	switch sort {
+	case "featured":
+		order = "(EXISTS (SELECT 1 FROM product_categories pc WHERE pc.product_id = p.id AND pc.category = 'Featured')) DESC, p.name ASC"
 	case "price_asc":
 		order = "p.price_units ASC, p.price_nanos ASC"
 	case "price_desc":

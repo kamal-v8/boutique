@@ -12,12 +12,21 @@ import (
 	shippingpb "ecommerce/shipping"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/health/grpc_health_v1"
 	"google.golang.org/grpc/status"
 )
 
 type server struct {
 	shippingpb.UnimplementedShippingServiceServer
 	commonpb.UnimplementedHealthServer
+}
+
+type healthServer struct {
+	grpc_health_v1.UnimplementedHealthServer
+}
+
+func (h *healthServer) Check(ctx context.Context, _ *grpc_health_v1.HealthCheckRequest) (*grpc_health_v1.HealthCheckResponse, error) {
+	return &grpc_health_v1.HealthCheckResponse{Status: grpc_health_v1.HealthCheckResponse_SERVING}, nil
 }
 
 func (s *server) Check(ctx context.Context, _ *commonpb.HealthCheckRequest) (*commonpb.HealthCheckResponse, error) {
@@ -61,6 +70,7 @@ func main() {
 	gs := grpc.NewServer()
 	shippingpb.RegisterShippingServiceServer(gs, srv)
 	commonpb.RegisterHealthServer(gs, srv)
+	grpc_health_v1.RegisterHealthServer(gs, &healthServer{})
 	log.Printf("[shippingservice] listening on 0.0.0.0:%s", port)
 	if err := gs.Serve(lis); err != nil {
 		log.Fatalf("[shippingservice] serve: %v", err)
