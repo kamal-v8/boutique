@@ -1,0 +1,69 @@
+name: Publish images
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-push:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Go Services
+          - { svc: productcatalog, ctx: services/productcatalog }
+          - { svc: checkoutservice, ctx: services/checkoutservice }
+          - { svc: shippingservice, ctx: services/shippingservice }
+          - { svc: promotionservice, ctx: services/promotionservice }
+
+          # Node Services
+          - { svc: authservice, ctx: ., df: services/authservice/Dockerfile }
+          - { svc: cartservice, ctx: ., df: services/cartservice/Dockerfile }
+          - { svc: orderservice, ctx: ., df: services/orderservice/Dockerfile }
+          - {
+              svc: paymentservice,
+              ctx: .,
+              df: services/paymentservice/Dockerfile,
+            }
+          - { svc: emailservice, ctx: ., df: services/emailservice/Dockerfile }
+          # Frontend
+          - { svc: frontend, ctx: ., df: frontend/Dockerfile }
+          # db-init
+          - { svc: db-init, ctx: ., df: db-init/Dockerfile }
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Derive tags
+        id: tags
+        run: |
+          echo "sha=ghcr.io/${{ github.repository_owner }}/boutique/${{ matrix.svc }}:sha-${GITHUB_SHA::7}" >>$GITHUB_OUTPUT
+          echo "latest=ghcr.io/${{ github.repository_owner }}/boutique/${{ matrix.svc }}:latest" >>$GITHUB_OUTPUT
+
+      - name: Build & push
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.ctx }}
+          file: ${{ matrix.df }}
+          push: true
+          tags: |
+            ${{ steps.tags.outputs.sha }}
+            ${{ steps.tags.outputs.latest }}
+          cache-from: type=gha,scope=${{ matrix.svc }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.svc }}
+          provenance: false

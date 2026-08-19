@@ -1,0 +1,174 @@
+name: boutique
+
+services:
+  postgres:
+    container_name: postgres
+    image: ghcr.io/kamal-v8/boutique/db-init:latest
+    ports:
+      - "5432-5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # - ./scripts/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      timeout: 5s
+      interval: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      timeout: 3s
+      interval: 5s
+      retries: 5
+  mailhog:
+    container_name: mailhog
+    image: mailhog/mailhog:latest
+    ports:
+      - "8025:8025" #for Web UI
+      - "1025:1025" # SMTP
+    profiles: ["email"]
+
+  authservice:
+    container_name: authservice
+    image: ghcr.io/kamal-v8/boutique/authservice:latest
+    environment:
+      PORT: "50051"
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/users_db
+      JWT_SECRET: ${JWT_SECRET}
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "50051:50051"
+
+  cartservice:
+    container_name: cartservice
+    image: ghcr.io/kamal-v8/boutique/cartservice:latest
+    environment:
+      PORT: "50053"
+      REDIS_ADDR: redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "50053:50083"
+
+  checkoutservice:
+    container_name: checkoutservice
+    image: ghcr.io/kamal-v8/boutique/checkoutservice:latest
+    environment:
+      PORT: "50054"
+      CART_SERVICE_ADDR: cartservice:50053
+      PRODUCT_SERVICE_ADDR: productcatalog:50052
+      PROMOTION_SERVICE_ADDR: promotionservice:50059
+      SHIPPING_SERVICE_ADDR: shippingservice:50057
+      ORDER_SERVICE_ADDR: orderservice:50055
+      PAYMENT_SERVICE_ADDR: paymentservice:50056
+      EMAIL_SERVICE_ADDR: emailservice:50058
+    depends_on:
+      - cartservice
+      - paymentservice
+      - promotionservice
+      - productcatalog
+      - shippingservice
+      - orderservice
+      - emailservice
+    ports:
+      - "50064:50064"
+
+  emailservice:
+    container_name: emailservice
+    image: ghcr.io/kamal-v8/boutique/emailservice:latest
+    environment:
+      PORT: "50058"
+      SMTP_HOST: mailhog
+      SMTP_PORT: "1025"
+      ORDER_SERVICE_ADDR: orderservice
+      AUTH_SERVICE_ADDR: authservice
+    ports:
+      - "50058:50058"
+    depends_on:
+      - authservice
+      - orderservice
+
+  orderservice:
+    image: ghcr.io/kamal-v8/boutique/orderservice:latest
+    environment:
+      PORT: "50055"
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/orders_db
+    ports:
+      - "50055:50055"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  paymentservice:
+    image: ghcr.io/kamal-v8/boutique/paymentservice:latest
+    ports:
+      - "50056:50056"
+    environment:
+      PROT: "50056"
+
+  productcatalog:
+    image: ghcr.io/kamal-v8/boutique/productcatalog:latest
+    environment:
+      PORT: "50052"
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/products_db?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "50052:50052"
+
+  promotionservice:
+    image: ghcr.io/kamal-v8/boutique/promotionservice:latest
+    environment:
+      PORT: "50059"
+      DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/products_db?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "50059:50059"
+
+  shippingservice:
+    image: ghcr.io/kamal-v8/boutique/shippingservice:latest
+    environment:
+      PORT: "50057"
+    ports:
+      - "50057:50057"
+
+  frontend:
+    image: ghcr.io/kamal-v8/boutique/frontend:latest
+    environment:
+      PORT: 8080
+      AUTH_SERVICE_ADDR: authservice:50051
+      PRODUCT_SERVICE_ADDR: productcatalog:50052
+      CART_SERVICE_ADDR: cartservice:50053
+      PROMOTION_SERVICE_ADDR: promotionservice:50059
+      CHECKOUT_SERVICE_ADDR: checkoutservice:50054
+      ORDER_SERVICE_ADDR: orderservice:50055
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      - authservice
+      - productcatalog
+      - cartservice
+      - promotionservice
+      - checkoutservice
+      - orderservice
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:
