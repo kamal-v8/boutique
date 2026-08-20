@@ -8,22 +8,25 @@ services:
       - "5432-5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      # - ./scripts/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      # Verify the app database exists (not just that postgres accepts TCP),
+      # so DB-backed services never start before users_db/products_db/orders_db.
+      test: ["CMD-SHELL", "psql -U $$POSTGRES_USER -d users_db -c 'SELECT 1' >/dev/null 2>&1"]
       timeout: 5s
       interval: 5s
-      retries: 5
+      retries: 12
 
   redis:
     image: redis:7-alpine
     container_name: redis
     ports:
       - "6379:6379"
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       timeout: 3s
@@ -32,14 +35,15 @@ services:
   mailhog:
     container_name: mailhog
     image: mailhog/mailhog:latest
+    restart: unless-stopped
     ports:
       - "8025:8025" #for Web UI
       - "1025:1025" # SMTP
-    profiles: ["email"]
 
   authservice:
     container_name: authservice
     image: ghcr.io/kamal-v8/boutique/authservice:latest
+    restart: unless-stopped
     environment:
       PORT: "50051"
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/users_db
@@ -55,6 +59,7 @@ services:
   cartservice:
     container_name: cartservice
     image: ghcr.io/kamal-v8/boutique/cartservice:latest
+    restart: unless-stopped
     environment:
       PORT: "50053"
       REDIS_ADDR: redis:6379
@@ -62,11 +67,12 @@ services:
       redis:
         condition: service_healthy
     ports:
-      - "50053:50083"
+      - "50053:50053"
 
   checkoutservice:
     container_name: checkoutservice
     image: ghcr.io/kamal-v8/boutique/checkoutservice:latest
+    restart: unless-stopped
     environment:
       PORT: "50054"
       CART_SERVICE_ADDR: cartservice:50053
@@ -85,11 +91,12 @@ services:
       - orderservice
       - emailservice
     ports:
-      - "50064:50064"
+      - "50054:50054"
 
   emailservice:
     container_name: emailservice
     image: ghcr.io/kamal-v8/boutique/emailservice:latest
+    restart: unless-stopped
     environment:
       PORT: "50058"
       SMTP_HOST: mailhog
@@ -104,6 +111,7 @@ services:
 
   orderservice:
     image: ghcr.io/kamal-v8/boutique/orderservice:latest
+    restart: unless-stopped
     environment:
       PORT: "50055"
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/orders_db
@@ -115,13 +123,15 @@ services:
 
   paymentservice:
     image: ghcr.io/kamal-v8/boutique/paymentservice:latest
+    restart: unless-stopped
     ports:
       - "50056:50056"
     environment:
-      PROT: "50056"
+      PORT: "50056"
 
   productcatalog:
     image: ghcr.io/kamal-v8/boutique/productcatalog:latest
+    restart: unless-stopped
     environment:
       PORT: "50052"
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/products_db?sslmode=disable
@@ -133,6 +143,7 @@ services:
 
   promotionservice:
     image: ghcr.io/kamal-v8/boutique/promotionservice:latest
+    restart: unless-stopped
     environment:
       PORT: "50059"
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/products_db?sslmode=disable
@@ -144,6 +155,7 @@ services:
 
   shippingservice:
     image: ghcr.io/kamal-v8/boutique/shippingservice:latest
+    restart: unless-stopped
     environment:
       PORT: "50057"
     ports:
@@ -151,6 +163,7 @@ services:
 
   frontend:
     image: ghcr.io/kamal-v8/boutique/frontend:latest
+    restart: unless-stopped
     environment:
       PORT: 8080
       AUTH_SERVICE_ADDR: authservice:50051

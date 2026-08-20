@@ -35,7 +35,7 @@ jobs:
           # Frontend
           - { svc: frontend, ctx: ., df: frontend/Dockerfile }
           # db-init
-          - { svc: db-init, ctx: ., df: db-init/Dockerfile }
+          - { svc: db-init, ctx: db-init, df: db-init/Dockerfile }
 
     steps:
       - uses: actions/checkout@v6
