@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { notifyCartChanged } from '@/lib/cart-events';
 
 export function LogoutButton() {
   const router = useRouter();
@@ -12,6 +13,7 @@ export function LogoutButton() {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
     } finally {
+      notifyCartChanged();
       router.push('/account');
       router.refresh();
     }

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { notifyCartChanged } from '@/lib/cart-events';
 
 export function AddToCartButton({ productId, outOfStock }: { productId: string; outOfStock?: boolean }) {
   const router = useRouter();
@@ -19,6 +20,7 @@ export function AddToCartButton({ productId, outOfStock }: { productId: string; 
       });
       if (!res.ok) throw new Error();
       setAdded(true);
+      notifyCartChanged();
       router.refresh();
     } catch {
       // silently ignore — refresh will surface empty-state errors if any

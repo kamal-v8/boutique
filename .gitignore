@@ -10,8 +10,15 @@ dist/
 .idea/
 .vscode/
 coverage/
+*.tsbuildinfo
 
 # Compiled Go service binaries (built by Dockerfile / go build)
 services/checkoutservice/checkoutservice
 services/shippingservice/shippingservice
+
+#terraform
+backend.hcl
+.terraform/
+*.tfstate*
+*.tfvars
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { notifyCartChanged } from '@/lib/cart-events';
 
 export function CartLineControls({ productId, quantity }: { productId: string; quantity: number }) {
   const router = useRouter();
@@ -18,6 +19,7 @@ export function CartLineControls({ productId, quantity }: { productId: string; q
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
+      notifyCartChanged();
       router.refresh();
     } finally {
       setBusy(false);

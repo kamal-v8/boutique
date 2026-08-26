@@ -4,8 +4,6 @@ services:
   postgres:
     container_name: postgres
     image: ghcr.io/kamal-v8/boutique/db-init:latest
-    ports:
-      - "5432-5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
@@ -16,7 +14,11 @@ services:
     healthcheck:
       # Verify the app database exists (not just that postgres accepts TCP),
       # so DB-backed services never start before users_db/products_db/orders_db.
-      test: ["CMD-SHELL", "psql -U $$POSTGRES_USER -d users_db -c 'SELECT 1' >/dev/null 2>&1"]
+      test:
+        [
+          "CMD-SHELL",
+          "psql -U $$POSTGRES_USER -d users_db -c 'SELECT 1' >/dev/null 2>&1",
+        ]
       timeout: 5s
       interval: 5s
       retries: 12
@@ -24,8 +26,6 @@ services:
   redis:
     image: redis:7-alpine
     container_name: redis
-    ports:
-      - "6379:6379"
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
@@ -37,8 +37,7 @@ services:
     image: mailhog/mailhog:latest
     restart: unless-stopped
     ports:
-      - "8025:8025" #for Web UI
-      - "1025:1025" # SMTP
+      - "127.0.0.1:8025:8025" # Web UI via SSH tunnel only
 
   authservice:
     container_name: authservice
@@ -53,8 +52,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    ports:
-      - "50051:50051"
 
   cartservice:
     container_name: cartservice
@@ -66,8 +63,6 @@ services:
     depends_on:
       redis:
         condition: service_healthy
-    ports:
-      - "50053:50053"
 
   checkoutservice:
     container_name: checkoutservice
@@ -90,8 +85,6 @@ services:
       - shippingservice
       - orderservice
       - emailservice
-    ports:
-      - "50054:50054"
 
   emailservice:
     container_name: emailservice
@@ -103,8 +96,6 @@ services:
       SMTP_PORT: "1025"
       ORDER_SERVICE_ADDR: orderservice
       AUTH_SERVICE_ADDR: authservice
-    ports:
-      - "50058:50058"
     depends_on:
       - authservice
       - orderservice
@@ -115,8 +106,6 @@ services:
     environment:
       PORT: "50055"
       DATABASE_URL: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/orders_db
-    ports:
-      - "50055:50055"
     depends_on:
       postgres:
         condition: service_healthy
@@ -124,8 +113,6 @@ services:
   paymentservice:
     image: ghcr.io/kamal-v8/boutique/paymentservice:latest
     restart: unless-stopped
-    ports:
-      - "50056:50056"
     environment:
       PORT: "50056"
 
@@ -138,8 +125,6 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    ports:
-      - "50052:50052"
 
   promotionservice:
     image: ghcr.io/kamal-v8/boutique/promotionservice:latest
@@ -150,16 +135,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    ports:
-      - "50059:50059"
 
   shippingservice:
     image: ghcr.io/kamal-v8/boutique/shippingservice:latest
     restart: unless-stopped
     environment:
       PORT: "50057"
-    ports:
-      - "50057:50057"
 
   frontend:
     image: ghcr.io/kamal-v8/boutique/frontend:latest
@@ -180,8 +161,36 @@ services:
       - promotionservice
       - checkoutservice
       - orderservice
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.frontend.rule=Host('zaptor.in') || Host('www.zaptor.in')
+      - traefik.http.routers.frontend.entrypoint=websecure
+      - traefik.http.routers.frontend.tls.certresolver=letsencrypt
+
+  traefik:
+    container_name: traefik
+    image: traefik:v3.5
+    restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "80:80"
+      - "443:443"
+    environment:
+      CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /home/ubuntu/traefik/acme.json:/acme.json
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.letsencrypt.acme.dnschallenge=true
+      - --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare
+      - --certificatesresolvers.letsencrypt.acme.email=${ACME_EMAIL}
+      - --certificatesresolvers.letsencrypt.acme.storage=/acme.json
+      - --log.level=INFO
 
 volumes:
   postgres_data:

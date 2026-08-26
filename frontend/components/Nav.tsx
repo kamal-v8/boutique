@@ -2,18 +2,25 @@
 
 import Link from 'next/link';
 import { Search, ShoppingBag, User } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { CART_CHANGED } from '@/lib/cart-events';
 
 export function Nav() {
   const [count, setCount] = useState(0);
   const [open, setOpen] = useState(false);
 
-  useEffect(() => {
+  const refresh = useCallback(() => {
     fetch('/api/cart/count', { cache: 'no-store' })
       .then((r) => r.json())
       .then((d) => setCount(d.count || 0))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    refresh();
+    window.addEventListener(CART_CHANGED, refresh);
+    return () => window.removeEventListener(CART_CHANGED, refresh);
+  }, [refresh]);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-base/80 backdrop-blur mix-blend-difference md:mix-blend-normal">

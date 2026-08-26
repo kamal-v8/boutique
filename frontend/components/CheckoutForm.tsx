@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { formatMoney, moneyFromCents } from '@/lib/money';
+import { notifyCartChanged } from '@/lib/cart-events';
 
 const SHIPPING_OPTIONS = [
   { id: 'standard', name: 'Standard — 5 days' },
@@ -55,6 +56,7 @@ export function CheckoutForm({ subtotalUnits }: { subtotalUnits: number }) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'checkout failed');
+      notifyCartChanged();
       router.push(`/orders/${data.order_id}`);
       router.refresh();
     } catch (e: any) {

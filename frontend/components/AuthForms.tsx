@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { notifyCartChanged } from '@/lib/cart-events';
 
 export function AuthForms() {
   const router = useRouter();
@@ -26,6 +27,7 @@ export function AuthForms() {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'something went wrong');
+      notifyCartChanged();
       router.push(next || '/account/orders');
       router.refresh();
     } catch (e: any) {
