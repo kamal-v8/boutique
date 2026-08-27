@@ -27,3 +27,20 @@ variable "ghcr_read_token" {
   default     = ""
 }
 
+variable "cloudflare_api_token" {
+  description = "Cloudflare API token with Zone:DNS:Edit for the zaptor.in zone"
+  type        = string
+  sensitive   = true
+}
+
+variable "cloudflare_zone_id" {
+  description = "Cloudflare Zone ID for zaptor.in (find in dashboard → Overview → right sidebar)"
+  type        = string
+}
+
+variable "domain_name" {
+  description = "Apex domain name"
+  type        = string
+  default     = "zaptor.in"
+}
+

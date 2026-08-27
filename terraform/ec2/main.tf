@@ -188,3 +188,22 @@ resource "aws_eip_association" "deploying_eip_association" {
   instance_id   = aws_instance.deploying.id
   allocation_id = aws_eip.deploying_eip.id
 }
+
+# Cloudflare DNS — auto-updates when EIP changes (terraform apply handles it)
+resource "cloudflare_record" "apex" {
+  zone_id = var.cloudflare_zone_id
+  name    = "@"
+  value   = aws_eip.deploying_eip.public_ip
+  type    = "A"
+  proxied = false
+  ttl     = 1
+}
+
+resource "cloudflare_record" "www" {
+  zone_id = var.cloudflare_zone_id
+  name    = "www"
+  value   = aws_eip.deploying_eip.public_ip
+  type    = "A"
+  proxied = false
+  ttl     = 1
+}
