@@ -163,13 +163,13 @@ services:
       - orderservice
     labels:
       - traefik.enable=true
-      - traefik.http.routers.frontend.rule=Host('zaptor.in') || Host('www.zaptor.in')
-      - traefik.http.routers.frontend.entrypoint=websecure
+      - traefik.http.routers.frontend.rule=Host(`zaptor.in`) || Host(`www.zaptor.in`)
+      - traefik.http.routers.frontend.entrypoints=websecure
       - traefik.http.routers.frontend.tls.certresolver=letsencrypt
 
   traefik:
     container_name: traefik
-    image: traefik:v3.5
+    image: traefik:v3.6.1
     restart: unless-stopped
     ports:
       - "80:80"
