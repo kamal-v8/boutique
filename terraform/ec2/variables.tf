@@ -31,11 +31,15 @@ variable "cloudflare_api_token" {
   description = "Cloudflare API token with Zone:DNS:Edit for the zaptor.in zone"
   type        = string
   sensitive   = true
+  # Dummy passes provider regex so `terraform destroy` without vars doesn't fail validation;
+  # real `apply` must override via tfvars/TF_VAR with a valid token, otherwise Cloudflare API will 401.
+  # default = "0000000000000000000000000000000000000000"
 }
 
 variable "cloudflare_zone_id" {
   description = "Cloudflare Zone ID for zaptor.in (find in dashboard → Overview → right sidebar)"
   type        = string
+  # default     = "0000000000000000000000000000000000000000"
 }
 
 variable "domain_name" {
@@ -44,3 +48,73 @@ variable "domain_name" {
   default     = "zaptor.in"
 }
 
+variable "ssm_prefix" {
+  description = "Prefix for SSM Parameter Store paths (full path = prefix/env/key)"
+  type        = string
+  default     = "/boutique"
+}
+
+variable "postgres_user" {
+  description = "Postgres user"
+  type        = string
+  default     = "boutique"
+}
+
+variable "postgres_db" {
+  description = "Postgres DB name"
+  type        = string
+  default     = "boutique"
+}
+
+variable "postgres_password" {
+  description = "Postgres password (SecureString)"
+  type        = string
+  sensitive   = true
+  # default     = ""
+}
+
+variable "jwt_secret" {
+  description = "JWT signing secret (SecureString)"
+  type        = string
+  sensitive   = true
+  # default     = ""
+}
+
+variable "admin_email" {
+  description = "Seeded admin email"
+  type        = string
+  default     = "admin@zaptor.in"
+}
+
+variable "admin_password" {
+  description = "Seeded admin password (SecureString)"
+  type        = string
+  sensitive   = true
+  # default     = ""
+}
+
+variable "demo_email" {
+  description = "Demo user email"
+  type        = string
+  default     = "demo@zaptor.in"
+}
+
+variable "demo_password" {
+  description = "Demo user password (SecureString)"
+  type        = string
+  sensitive   = true
+  # default     = ""
+}
+
+variable "acme_email" {
+  description = "ACME email for Let's Encrypt"
+  type        = string
+  default     = "you@zaptor.in"
+}
+
+variable "cf_dns_api_token" {
+  description = "Cloudflare DNS API token for Traefik (SecureString, stored as /boutique/dev/cf_dns_api_token)"
+  type        = string
+  sensitive   = true
+  # default     = ""
+}

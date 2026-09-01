@@ -11,6 +11,8 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     restart: unless-stopped
+    labels:
+      - com.cent
     healthcheck:
       # Verify the app database exists (not just that postgres accepts TCP),
       # so DB-backed services never start before users_db/products_db/orders_db.
@@ -32,12 +34,17 @@ services:
       timeout: 3s
       interval: 5s
       retries: 5
+    labels:
+      - com.cent
+
   mailhog:
     container_name: mailhog
     image: mailhog/mailhog:latest
     restart: unless-stopped
     ports:
       - "127.0.0.1:8025:8025" # Web UI via SSH tunnel only
+    labels:
+      - com.cent
 
   authservice:
     container_name: authservice
@@ -52,6 +59,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    labels:
+      - com.cent
 
   cartservice:
     container_name: cartservice
@@ -63,6 +72,8 @@ services:
     depends_on:
       redis:
         condition: service_healthy
+    labels:
+      - com.cent
 
   checkoutservice:
     container_name: checkoutservice
@@ -85,6 +96,8 @@ services:
       - shippingservice
       - orderservice
       - emailservice
+    labels:
+      - com.cent
 
   emailservice:
     container_name: emailservice
@@ -99,6 +112,8 @@ services:
     depends_on:
       - authservice
       - orderservice
+    labels:
+      - com.cent
 
   orderservice:
     image: ghcr.io/kamal-v8/boutique/orderservice:latest
@@ -109,12 +124,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    labels:
+      - com.cent
 
   paymentservice:
     image: ghcr.io/kamal-v8/boutique/paymentservice:latest
     restart: unless-stopped
     environment:
       PORT: "50056"
+    labels:
+      - com.cent
 
   productcatalog:
     image: ghcr.io/kamal-v8/boutique/productcatalog:latest
@@ -125,6 +144,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    labels:
+      - com.cent
 
   promotionservice:
     image: ghcr.io/kamal-v8/boutique/promotionservice:latest
@@ -135,12 +156,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    labels:
+      - com.cent
 
   shippingservice:
     image: ghcr.io/kamal-v8/boutique/shippingservice:latest
     restart: unless-stopped
     environment:
       PORT: "50057"
+    labels:
+      - com.cent
 
   frontend:
     image: ghcr.io/kamal-v8/boutique/frontend:latest
@@ -162,6 +187,7 @@ services:
       - checkoutservice
       - orderservice
     labels:
+      - com.cent
       - traefik.enable=true
       - traefik.http.routers.frontend.rule=Host(`zaptor.in`) || Host(`www.zaptor.in`)
       - traefik.http.routers.frontend.entrypoints=websecure
@@ -171,6 +197,8 @@ services:
     container_name: traefik
     image: traefik:v3.6.1
     restart: unless-stopped
+    labels:
+      - com.cent
     ports:
       - "80:80"
       - "443:443"
@@ -192,5 +220,16 @@ services:
       - --certificatesresolvers.letsencrypt.acme.storage=/acme.json
       - --log.level=INFO
 
+  watchtower:
+    image: nicholas-fedor/watchtower
+    container_name: watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # - /root/.docker/config.json:/config.json:ro # if a private repo for GHCR auth
+    environment:
+      - WATCHTOWER_CLEANUP=true # removes old images after update
+      - WATCHTOWER_POLL_INTERVAL=6767 # ~1h53m
+    command: --label-enable # only watch containers with the com.cent label
 volumes:
   postgres_data:
