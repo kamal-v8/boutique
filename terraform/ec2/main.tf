@@ -284,7 +284,15 @@ set -ex
 
 # 1. Update and install basic dependencies
 apt-get update -y
-apt-get install -y ca-certificates curl gnupg certbot git jq unzip awscli
+apt-get install -y ca-certificates curl gnupg certbot git jq unzip
+
+# 1b. Install AWS CLI v2 (bundled installer — the `awscli` apt package has no candidate on Ubuntu 24.04)
+if ! command -v aws >/dev/null 2>&1; then
+  curl -fsSL "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o /tmp/awscliv2.zip
+  unzip -q /tmp/awscliv2.zip -d /tmp
+  /tmp/aws/install
+  rm -rf /tmp/awscliv2.zip /tmp/aws
+fi
 
 # 2. Install Docker
 install -m 0755 -d /etc/apt/keyrings
