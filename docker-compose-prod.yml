@@ -221,7 +221,7 @@ services:
       - --log.level=INFO
 
   watchtower:
-    image: nicholas-fedor/watchtower
+    image: containrrr/watchtower
     container_name: watchtower
     restart: unless-stopped
     volumes:
