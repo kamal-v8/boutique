@@ -120,7 +120,10 @@ resource "aws_iam_role_policy" "ssm_params_read" {
           "ssm:GetParametersByPath",
           "ssm:DescribeParameters"
         ]
-        Resource = "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter${var.ssm_prefix}/${var.environment}/*"
+        Resource = [
+          "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter${var.ssm_prefix}/${var.environment}",
+          "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter${var.ssm_prefix}/${var.environment}/*"
+        ]
       },
       {
         Effect   = "Allow"
