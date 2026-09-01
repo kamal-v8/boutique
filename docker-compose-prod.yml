@@ -230,6 +230,7 @@ services:
     environment:
       - WATCHTOWER_CLEANUP=true # removes old images after update
       - WATCHTOWER_POLL_INTERVAL=6767 # ~1h53m
+      - DOCKER_API_VERSION=1.45
     command: --label-enable # only watch containers with the com.cent label
 volumes:
   postgres_data:
