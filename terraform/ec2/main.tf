@@ -139,31 +139,7 @@ resource "aws_iam_role_policy" "ssm_params_read" {
   })
 }
 
-# Backups bucket is owned by backend-bootstarp/ (so `terraform destroy` in ec2/ doesn't delete backups)
-data "aws_s3_bucket" "backups" {
-  bucket = "boutique-backups-${data.aws_caller_identity.current.account_id}"
-}
 
-# s3 write permission
-resource "aws_iam_role_policy_attachment" "s3_backups" {
-  role       = aws_iam_role.ssm.name
-  policy_arn = aws_iam_policy.s3_backups.arn
-}
-
-resource "aws_iam_policy" "s3_backups" {
-  name = "boutique-s3-backups"
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [{
-      Effect = "Allow"
-      Action = ["s3:PutObject", "s3:GetObject", "s3:ListBucket"]
-      Resource = [
-        data.aws_s3_bucket.backups.arn,
-        "${data.aws_s3_bucket.backups.arn}/*"
-      ]
-    }]
-  })
-}
 # Key pair
 
 resource "aws_key_pair" "deployer" {
